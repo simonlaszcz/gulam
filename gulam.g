@@ -23,4 +23,5 @@ set baud_rate 9600
 set sz_rs232_buffer 4096
 set histfile c:\history.g
 set history 25
+set restore_cwd_after_exec 1
 rehash

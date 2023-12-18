@@ -1,7 +1,25 @@
 /*
- * $Header: f:/src/gulam\RCS\main.c,v 1.1 1991/09/10 01:02:04 apratt Exp $ $Locker:  $
+ * $Header: d:\home\projects\gulam\RCS\main.c,v 1.4 2023/12/15 22:44:04 slaszcz Exp $ $Locker:  $
  * ======================================================================
  * $Log: main.c,v $
+ * Revision 1.4  2023/12/15  22:44:04  slaszcz
+ * Added a startup message
+ *
+ * Revision 1.3  2023/12/12  21:06:50  slaszcz
+ * The env_style 'mw' has been renamed 'argv', reflecting that it is an
+ * implementation of the official protocol.
+ * The argv env_style is enabled by default.
+ * The argv protocol is used only when enabled and necessary, i.e. the
+ * cmdln exceeds 124 bytes. This improves compatibility with progs that
+ * don't understand it; the cmdln length was always set to 127 which caused
+ * malformed arguments.
+ *
+ * Revision 1.2  2023/12/05  23:31:52  slaszcz
+ * Show the cursor before displaying the prompt.
+ *
+ * Revision 1.1  1999/12/31  01:26:24  slaszcz
+ * initial
+ *
  * Revision 1.1  1991/09/10  01:02:04  apratt
  * First CI of AKP
  *
@@ -75,6 +93,7 @@ beta-test version 1.03.04.05 890111 of\r\n\
 some changes by ggf@js.uucp,\r\n\
 \t{akp,kbad}@atari.uucp (10/22/90)\r\n\
 more changes by tho (10/30/21)\r\n\
+more changes by slz (Dec 2023)\r\n\
 \r\n";
 
 unsigned long masterdate;						/* AKP: extern exported to gmcatari.c */
@@ -197,6 +216,7 @@ void getcmdanddoit(void)
 {
 	char *p;
 
+	visiblecursor();
 	p = getoneline();
 	gputs(CRLF);
 	cmdprobe = 0;						/* AKP: inhibit first call to useraborted() */
@@ -328,7 +348,7 @@ int main(int argc, char **argv, char **envp)
 	}
 	insertvar(Ncmd, itoal(1L));
 	insertvar(Verbosity, "1");
-
+	insertvar(EnvStyle, ENVSTYLE_ARGV);
 	stamptime(&masterdate);			/* AKP */
 
 	if (argc == 1)

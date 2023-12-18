@@ -33,6 +33,10 @@ typedef	char	uchar;
 #define	CTRLO	'\017'
 #define	ESC	'\033'
 
+#define ENVSTYLE_ARGV	"argv"
+#define ENVSTYLE_GU		"gu"
+#define ENVSTYLE_BM		"bm"
+
 #define	Iwssz	100
 typedef struct
 {	int	nc;
@@ -82,9 +86,14 @@ extern uchar Tempexit[];
 extern uchar Scrninit[];							/* clr scrn, cursr off, wordwrap on */
 extern uchar Parentexp[];
 extern uchar Ncmd[];
+/* when enabled, store the cwd before executing an external cmd and 
+restore it afterwards */
+extern uchar RestoreCwdAfterExec[];
+extern uchar EnvStyle[];
 extern long starttick;
 extern long _stksize;
 extern unsigned long masterdate;
+#define SZext	(25)
 extern uchar ext[];
 extern uchar *rednm[2];
 extern int outappend;
@@ -175,6 +184,7 @@ WS *aliasexp(WS *ws);
  * fop.c
  */
 void pwd(uchar *arg);
+void cwdvar(void);
 void cdcmd(uchar *arg);
 void dirs(uchar *arg);
 void pushd(uchar *arg);
@@ -273,6 +283,7 @@ uchar *lexsemicol(void);
 void lexaccept(WS *w);
 void lexpush(void);
 void lexpop(void);
+WS *lexdup(void);
 
 
 /*

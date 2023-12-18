@@ -1,7 +1,11 @@
 /*
- * $Header: f:/src/gulam\RCS\fop.c,v 1.1 1991/09/10 01:02:04 apratt Exp $ $Locker:  $
+ * $Header: d:\home\src\gulam\RCS\fop.c,v 1.2 2023/12/06 00:19:12 slaszcz Exp $ $Locker:  $
  * ======================================================================
  * $Log: fop.c,v $
+ * Revision 1.2  2023/12/06  00:19:12  slaszcz
+ * cwdvar() is no longer static. Now we can call this function
+ * anywhere to update the cwd variable, e.g. after cd()
+ *
  * Revision 1.1  1991/09/10  01:02:04  apratt
  * First CI of AKP
  *
@@ -75,7 +79,7 @@ void pwd(uchar *arg)
 	strg = gfgetcwd();
 }
 
-static void cwdvar(void)
+void cwdvar(void)
 {
 	char *p;
 

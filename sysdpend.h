@@ -46,7 +46,8 @@
 #define	kbddisplayinit()	/* empty */
 #define	topen()			/* empty */
 #define	execfile(g, cmdln, envp) Pexec(0, g, cmdln, envp)
-#define	executables(q)		matchednms(q, "*.(tos|ttp|prg|g)", 1)
+#define ALL_EXE_BRE			"*.(app|gtp|tos|ttp|prg|g)"
+#define	executables(q)		matchednms(q, ALL_EXE_BRE, 1)
 #define	deleteext(nm, p)	{if ((p = strrchr(nm, '.')) != NULL) *p = '\000';}
 #define	isgulamfile(p)		(strcmp(p, ".g") == 0)
 
@@ -125,9 +126,6 @@ typedef	struct	GSTAT 		/*  similar to disk transfer area	*/
 
 #define	bgnGSTAT 20
 
-/* uchar ext[SZext] = "g\000\000\000tos\000ttp\000prg\000";	*/
-
-#define SZext	17
 #define	SZcmd	256	/* size of cmd buffer; can be whatever	*/
 #define	LDFLNSEP	2		/* length of DFLNSEP */
 

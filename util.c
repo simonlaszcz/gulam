@@ -137,8 +137,6 @@ void freews(WS *ws)
 	}
 }
 
-#if 00									/* unused */
-
 WS *dupws(WS *ws)
 {
 	WS *w2;
@@ -148,7 +146,7 @@ WS *dupws(WS *ws)
 	w2 = (WS *) gmalloc(((uint) sizeof(WS)));
 	if (w2)
 	{
-		if (w2->ps = gmalloc(ws->nc))
+		if ((w2->ps = gmalloc(ws->nc)) != NULL)
 		{
 			w2->sz = w2->nc = ws->nc;
 			w2->ns = ws->ns;
@@ -161,7 +159,6 @@ WS *dupws(WS *ws)
 	}
 	return w2;
 }
-#endif
 
 int findstr(WSPS q, uchar *p)
 {

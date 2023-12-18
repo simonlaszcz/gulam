@@ -1,7 +1,10 @@
 /*
- * $Header: f:/src/gulam\RCS\gmcatari.c,v 1.1 1991/09/10 01:02:04 apratt Exp $ $Locker:  $
+ * $Header: d:\home\src\gulam\RCS\gmcatari.c,v 1.2 2023/12/05 23:56:06 slaszcz Exp $ $Locker:  $
  * ======================================================================
  * $Log: gmcatari.c,v $
+ * Revision 1.2  2023/12/05  23:56:06  slaszcz
+ * Added app and gtp to the list of executable extensions stored in ext[]
+ *
  * Revision 1.1  1991/09/10  01:02:04  apratt
  * First CI of AKP
  *
@@ -89,8 +92,7 @@ uchar DS2[] = "\\\\";
 uchar DS3[] = "\\~";
 uchar DS4[] = ":\\";
 uchar DS5[] = "\\..\\";
-
-uchar ext[SZext] = "g\0\0\0tos\0ttp\0prg\0";
+uchar ext[SZext] = "g\0\0\0tos\0ttp\0prg\0app\0gtp\0";
 
 #ifdef __GNUC__
 long _stksize = 8 * 1024L;				/* controls stack size  */

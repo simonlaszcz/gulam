@@ -1,7 +1,17 @@
 /*
- * $Header: f:/src/gulam\RCS\gfsatari.c,v 1.1 1991/09/10 01:02:04 apratt Exp $ $Locker:  $
+ * $Header: d:\home\src\gulam\RCS\gfsatari.c,v 1.2 2023/12/06 00:01:42 slaszcz Exp $ $Locker:  $
  * ======================================================================
  * $Log: gfsatari.c,v $
+ * Revision 1.2  2023/12/06  00:01:42  slaszcz
+ * Previously, a dir with an executable extension would have been
+ * identified as a file rather than a dir by filetp(). Now, if the
+ * directory attr flag is set, filetp() returns immediately (with a file
+ * type of 'directory') rather than proceeding to check the filename's
+ * extension.
+ *
+ * Revision 1.1  1999/12/31  00:22:18  slaszcz
+ * initial
+ *
  * Revision 1.1  1991/09/10  01:02:04  apratt
  * First CI of AKP
  *
@@ -59,9 +69,9 @@ int filetp(uchar *p, int a)
 	if (a & 0x06)
 		c = '!';						/* hidden   */
 	if (a & 0x08)
-		c = '#';						/* volume   */
+		return '#';						/* volume   */
 	if (a & 0x10)
-		c = DSC;						/* dir      */
+		return DSC;						/* dir      */
 
 	if ((q = strrchr(p, '.')) != NULL)
 		for (q++, i = 0; i < SZext - 1; i += 4)

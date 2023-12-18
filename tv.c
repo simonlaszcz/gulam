@@ -1,7 +1,24 @@
 /*
- * $Header: f:/src/gulam\RCS\tv.c,v 1.1 1991/09/10 01:02:04 apratt Exp $ $Locker:  $
+ * $Header: d:\home\projects\gulam\RCS\tv.c,v 1.3 2023/12/12 21:06:50 slaszcz Exp $ $Locker:  $
  * ======================================================================
  * $Log: tv.c,v $
+ * Revision 1.3  2023/12/12  21:06:50  slaszcz
+ * The env_style 'mw' has been renamed 'argv', reflecting that it is an
+ * implementation of the official protocol.
+ * The argv env_style is enabled by default.
+ * The argv protocol is used only when enabled and necessary, i.e. the
+ * cmdln exceeds 124 bytes. This improves compatibility with progs that
+ * don't understand it; the cmdln length was always set to 127 which caused
+ * malformed arguments.
+ *
+ * Revision 1.2  2023/12/07  10:05:30  slaszcz
+ * New shell variable: restore_cwd_after_exec. When true, the cwd
+ * is stored before an external cmd is executed. The cwd is then restored
+ * when the cmd completes.
+ *
+ * Revision 1.1  2023/12/06  23:33:56  slaszcz
+ * initial
+ *
  * Revision 1.1  1991/09/10  01:02:04  apratt
  * First CI of AKP
  *
@@ -253,7 +270,7 @@ void gputenv(const char *p, const char *q)
 WS *dupenvws(int flag)
 {
 	flag = (flag ? 2 : 3);
-	if (flag == 3 && strcmp(varstr("env_style"), "bm") == 0)
+	if (flag == 3 && strcmp(varstr(EnvStyle), ENVSTYLE_BM) == 0)
 		flag = 4;
 	return tblws(envp, flag);
 }
@@ -326,6 +343,8 @@ uchar Status[] = "status";
 uchar Verbosity[] = "verbosity";
 uchar Mscursor[] = "mscursor";
 uchar Ncmd[] = "ncmd";
+uchar RestoreCwdAfterExec[] = "restore_cwd_after_exec";
+uchar EnvStyle[] = "env_style";
 
 #if	AtariST
 uchar Font[] = "font";					/* extension by AKP */

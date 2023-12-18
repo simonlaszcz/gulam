@@ -268,3 +268,8 @@ void lexpop(void)
 	sp = tp->next;
 	gfree(tp);
 }
+
+WS *lexdup(void)
+{
+	return dupws(ws);
+}

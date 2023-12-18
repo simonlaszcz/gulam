@@ -1,7 +1,35 @@
 /*
- * $Header: f:/src/gulam\RCS\do.c,v 1.1 1991/09/10 01:02:04 apratt Exp $ $Locker:  $
+ * $Header: d:\home\projects\gulam\RCS\do.c,v 1.6 2023/12/15 22:45:36 slaszcz Exp $ $Locker:  $
  * ======================================================================
  * $Log: do.c,v $
+ * Revision 1.6  2023/12/15  22:45:36  slaszcz
+ * Don't unquote the cmdln of external commands, otherwise args would be
+ * split on all spaces.
+ *
+ * Revision 1.5  2023/12/13  21:08:22  slaszcz
+ * If env_style is not argv and the cmdln would be truncated, then prompt
+ * the user whether to continue with cmd execution.
+ *
+ * Revision 1.4  2023/12/12  21:06:50  slaszcz
+ * The env_style 'mw' has been renamed 'argv', reflecting that it is an
+ * implementation of the official protocol.
+ * The argv env_style is enabled by default.
+ * The argv protocol is used only when enabled and necessary, i.e. the
+ * cmdln exceeds 124 bytes. This improves compatibility with progs that
+ * don't understand it; the cmdln length was always set to 127 which caused
+ * malformed arguments.
+ *
+ * Revision 1.3  2023/12/07  10:05:30  slaszcz
+ * New shell variable: restore_cwd_after_exec. When true, the cwd
+ * is stored before an external cmd is executed. The cwd is then restored
+ * when the cmd completes.
+ *
+ * Revision 1.2  2023/12/06  00:24:50  slaszcz
+ * initial
+ *
+ * Revision 1.1  2023/12/03  23:04:06  slaszcz
+ * initial
+ *
  * Revision 1.1  1991/09/10  01:02:04  apratt
  * First CI of AKP
  *
@@ -89,7 +117,10 @@ static void setdate(uchar *arg)
 static void run(uchar *g, uchar *cmdln, uchar *envp)
 {
 	uchar *p;
+	uchar *cwd = NULL;
 
+	if (varnum(RestoreCwdAfterExec))	
+		cwd = gfgetcwd();
 	emsg = NULL;
 	p = strrchr(g, '.');
 	if (p != NULL)
@@ -97,7 +128,7 @@ static void run(uchar *g, uchar *cmdln, uchar *envp)
 		if (isgulamfile(p))
 		{
 			valu = batch(g, cmdln, envp);
-			return;
+			goto restore_cwd;
 		}
 	}
 
@@ -105,55 +136,92 @@ static void run(uchar *g, uchar *cmdln, uchar *envp)
 	valu = execfile(g, cmdln, envp);
 	keysetup();
 	setgulam();							/* set _shell_p ptrs again  */
+restore_cwd:
+	if (cwd != NULL) {
+		cd(cwd);
+		cwdvar();
+	}
 }
 
 
-/* Prepare command tail, and environment for Pexec() */
+/**
+* Prepare command tail, and environment for Pexec() 
+* flag=1 denotes .g file executed using 'source' cmd
+*/
+#if TOS
 static void mkcmdenv(int flag, char *pgm, char **cmdp, char **envp)
 {
-#if	TOS
 	static uchar ARGVVAL[] = "ARGV=";
-#endif
+	uchar *p = NULL, *e = NULL;
+	WS *ws = NULL, *cmd = NULL;
+	UNUSED(pgm);
+	*cmdp = *envp = NULL;
+		
+	/* duplicate the cmdln as it gets trashed by lextail and we
+	might need it for ARGV */
+	cmd = lexdup();
+	
+	ws = initws();
+	strwcat(ws, ES, 1);				/* 1 byte for length */
+	strwcat(ws, lextail(), 0);
+	p = *cmdp = ws->ps;
+	
+	/* 'cmdln' of Pexec needs length */
+	/* we only get a byte to store length and ws->nc is an int */
+	if (ws->nc > 255)
+		*p = 255;
+	else
+		*p = (uchar) (ws->nc - 1);		
+	gfree(ws);
+	ws = NULL;
+	
+	/* cmdline size check */
+	/* only use the ARGV protocol if cmdline is too long */
+	if (*p > 124) {
+		*p = 124;
+		if (flag == 0) {
+			e = varstr(EnvStyle);
+			if (e == NULL || *e == '\0')
+				e = ENVSTYLE_GU;
+			if (strcmp(e, ENVSTYLE_ARGV) == 0)
+				*p = 127;	
+		}
+		if (*p == 124 && mlyesno("Command line will be truncated. Continue? [yn] ") != TRUE) {
+			emsg = "Aborted";
+			goto cleanup;
+		}
+	}
+	
+	ws = dupenvws(0);
+	if (*p == 127) {
+		strwcat(ws, ARGVVAL, 0);
+		appendws(ws, cmd, 0);
+	}
+	*envp = ws->ps;
+	
+cleanup:
+	gfree(ws);	
+	gfree(cmd);
+}
+#else
+static void mkcmdenv(int flag, char *pgm, char **cmdp, char **envp)
+{
 	uchar *p;
 	WS *ws;
-	int mwcflag = 0;
 
 	ws = dupenvws(0);
-#if	TOS
-	p = varstr("env_style");
-	if (p == NULL || *p == '\0')
-		p = "gu";
-	if (flag == 0 && p[0] == 'm' && p[1] == 'w')	/* Mark Williams style */
-	{
-		strwcat(ws, ARGVVAL, 0);
-		strwcat(ws, pgm, 1);
-		appendlextail(ws);				/* all the args appended */
-		mwcflag = 1;
-	}
-#endif
 	*envp = ws->ps;
 	gfree(ws);
 
 	ws = initws();
-	strwcat(ws, ES, 1);					/* 1 byte for length */
 	strwcat(ws, lextail(), 0);
 	if (ws == NULL)
 		*cmdp = NULL;
 	else
-	{
 		p = *cmdp = ws->ps;
-		*p = (uchar) (ws->nc - 1);		/* 'cmdln' of Pexec needs length */
-#if	TOS
-		/* A little range checking might lighten things up... (AKP) */
-		if ((ws->nc - 1) > 0x7e)
-			*p = 0x7e;
-		if (mwcflag)
-			*p = 0x7f;					/* validate ARGV in env (AKP) */
-#endif
-	}
 	gfree(ws);
 }
-
+#endif
 
 /* Execute file p: We search the hash table first; then try as is;
 then try appending .tos|.ttp|.ttp|.g.  If flag != 0, just see if p is
@@ -169,6 +237,8 @@ static void lexec(uchar *p, int flag)
 	uchar *g;
 
 	mkcmdenv(flag, p, &cmdln, &envp);
+	if (emsg)
+		goto freecmdln;
 	if (flag)
 	{
 		valu = batch(p, cmdln, envp);
@@ -196,7 +266,7 @@ static void lexec(uchar *p, int flag)
 	n = 0;
 
 #if	TOS
-	if ((q = str3cat(q, ".(g|tos|ttp|prg)", ES)) != NULL)
+	if ((q = str3cat(q, ALL_EXE_BRE, ES)) != NULL)
 	{
 		n = matchednms(lst, q, 1);
 		gfree(q);
@@ -263,15 +333,15 @@ static void bexit(uchar *arg)
 
 	if (quickexit(0, 1) != 1)
 		return;
-	invisiblecursor();
 	mouseon(NULL);
-	cd(varstr("home"));
 	p = fnmpred('e', Sgulamend);
 	if (*p == '1')
 		processcmd(gstrdup(Sgulamend), 0);
 	savehistory();
 	keyreset(FALSE, 1);
 	fontreset();
+  	invisiblecursor();
+  	cd(varstr("home"));
 	exit(n);
 }
 
@@ -593,15 +663,13 @@ void docmd(void)
 		}
 
 	/*
-	 * STOOPID! btype used to be set to b's type whether or not
-	 * b was actually the command you typed in! Now btype for
-	 * non-builtins is one, meaning the command may change dir stuff
-	 * Also, btype is compared against values, not bits, so you'd
+	 * n.b. btype is compared against values, not bits, so you'd
 	 * better not try to set more than one bit (except the +1 bit).
 	 */
-
+	 
+	/* We shouldn't unquote the cmdln of external commands */
 	if (i != 0)
-		btype = 1;
+		btype = NOUNQU;
 	else
 		btype = (int) b->type;
 
