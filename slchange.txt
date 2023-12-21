@@ -4,9 +4,9 @@
 | |_| |  __/ (__   / __/| |_| / __/ ___) |
 |____/ \___|\___| |_____|\___/_____|____/ 
 
-New shell variable: RestoreCwdAfterExec. When true (false by default), the cwd 
-can never be changed by an external command as the cwd is stored before and 
-restored after command execution.
+New shell variable: restore_cwd_after_exec. When true (false by default), 
+the cwd can never be changed by an external command as the cwd is stored before
+and restored after command execution.
 
 How the environment (argv,envp) is constructed for internal and external 
 commands has been modified:
