@@ -149,6 +149,8 @@ restore_cwd:
 * flag=1 denotes .g file executed using 'source' cmd
 */
 #if TOS
+#define CMD_MAX		(125)
+#define ARGV_LEN	(127)
 static void mkcmdenv(int flag, char *pgm, char **cmdp, char **envp)
 {
 	static uchar ARGVVAL[] = "ARGV=";
@@ -168,32 +170,33 @@ static void mkcmdenv(int flag, char *pgm, char **cmdp, char **envp)
 	
 	/* 'cmdln' of Pexec needs length */
 	/* we only get a byte to store length and ws->nc is an int */
-	if (ws->nc > 255)
-		*p = 255;
+	if (ws->nc > 254)
+		*p = 254;
 	else
-		*p = (uchar) (ws->nc - 1);		
+		*p = (uchar) (ws->nc - 1);
+	/* p[0] now stores the cmdln len, excluding the leading length byte */
 	gfree(ws);
 	ws = NULL;
 	
 	/* cmdline size check */
 	/* only use the ARGV protocol if cmdline is too long */
-	if (*p > 124) {
-		*p = 124;
+	if (*p > CMD_MAX) {
+		*p = CMD_MAX;
 		if (flag == 0) {
 			e = varstr(EnvStyle);
 			if (e == NULL || *e == '\0')
 				e = ENVSTYLE_GU;
 			if (strcmp(e, ENVSTYLE_ARGV) == 0)
-				*p = 127;	
+				*p = ARGV_LEN;
 		}
-		if (*p == 124 && mlyesno("Command line will be truncated. Continue? [yn] ") != TRUE) {
+		if (*p == CMD_MAX && mlyesno("Command line will be truncated. Continue? [yn] ") != TRUE) {
 			emsg = "Aborted";
 			goto cleanup;
 		}
 	}
 	
 	ws = dupenvws(0);
-	if (*p == 127) {
+	if (*p == ARGV_LEN) {
 		strwcat(ws, ARGVVAL, 0);
 		appendws(ws, cmd, 0);
 	}

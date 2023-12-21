@@ -13,27 +13,26 @@ commands has been modified:
 * FIX: The length of the command line buffer is stored as an 'int' by Gulam. 
 Length is stored as 'uchar' in the Pexec command line. Previously it was 
 assigned without checking for truncation.
-* FIX: The maxium length of the DTA section command line has been redefined as 
-124 bytes (as per tos_hyp). Previously it was 126.
-* The value 'mw' (Mark Williams) for the shell variable 'env_style' has been
-renamed 'argv'. Since it implemented what became known as the basic argv 
+* FIX: The maxium length of the DTA section command line is 125 bytes 
+(as per tos_hyp). Previously it was treated as 126 bytes.
+* CHG: The value 'mw' (Mark Williams) for the shell variable 'env_style' has 
+been renamed 'argv'. Since it implemented what became known as the basic argv 
 protocol anyway, I beleive this is clearer.
-* The argv protocol is enabled by default.
-* FIX: The argv protocol is now only used when enabled and necessary. This 
+* NEW: The argv protocol is enabled by default.
+* NEW: The argv protocol is now only used when enabled and necessary. This 
 improves compatibility with programs that don't understand the protocol. 
 Previously, if the argv env_style was enabled, the command line length embedded 
 in Pexec calls was always set to 127. This was always invalid for such programs.
-* If the argv protocol is disabled but the command line is too long, the user
-is prompted whether to continue.
+* NEW: If the argv protocol is disabled but the command line is too long, the 
+user is prompted whether to continue.
 * FIX. Previously the standard command lines (i.e. not argv) of external 
 commands were stripped of quotes meaning that quoted strings were tokenized on
-spaces.
+all spaces.
 
 Changes to file type determination:
-* APP and GTP are now considered executable.
+* NEW: APP and GTP are now considered executable.
 * FIX: Previously, a directory that happened to have an executable extension
-would have been identified as a file not a directory.
+would have been identified as a file, not a directory.
 
 General changes:
-* The cursor is made visible at the start of every command prompt.
-
+* NEW: The cursor is made visible at the start of every command prompt.
