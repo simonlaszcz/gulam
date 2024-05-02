@@ -15,7 +15,7 @@
 CROSS = m68k-atari-mint-
 WARN = -Wall -Wstrict-prototypes -Wmissing-prototypes -Wold-style-declaration -Wold-style-definition -Werror
 CC = $(CROSS)gcc
-CFLAGS = -O2 -fomit-frame-pointer -funsigned-char $(WARN)
+CFLAGS = -O2 -fomit-frame-pointer -funsigned-char $(WARN) -DTOS
 LDFLAGS = -s
 LIBS =
 
@@ -32,9 +32,9 @@ GUFILES	=	cs.o do.o ex.o fop.o gcoatari.o \
 
 OFILES	= $(UEFILES) $(GUFILES)
 
-all: gunew.prg
+all: gulam.ttp
 
-gunew.prg:	$(OFILES)
+gulam.ttp:	$(OFILES)
 		$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OFILES) $(LIBS)
 
 $(OFILES):	ue.h gu.h keynames.h regexp.h sysdpend.h
@@ -43,4 +43,4 @@ gasmmwc.o:	gasmmwc.s
 		as -o $@ $<
 
 clean::
-	rm -f *.o *.prg
+	rm -f *.o *.ttp
