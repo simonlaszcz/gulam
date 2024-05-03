@@ -1,9 +1,12 @@
- ____              ____   ___ ____  _____ 
-|  _ \  ___  ___  |___ \ / _ \___ \|___ / 
-| | | |/ _ \/ __|   __) | | | |__) | |_ \ 
-| |_| |  __/ (__   / __/| |_| / __/ ___) |
-|____/ \___|\___| |_____|\___/_____|____/ 
+May 2024
+========
+* FIX: Bombs occurred when executing an external program via _shell_p. Gulam 
+was reinitialising _shell_p after each command, including mid execution of _shell_p
+which requires the caller to use super mode. Now, _shell_p is init'd only when
+Gulam is in user mode.
 
+Dec 2023
+========
 New shell variable: restore_cwd_after_exec. When true (false by default), 
 the cwd can never be changed by an external command as the cwd is stored before
 and restored after command execution.

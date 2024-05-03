@@ -29,7 +29,7 @@
 #define d_length dta_size
 #define DOSTIME _DOSTIME
 #define DISKINFO _DISKINFO
-#define cdecl
+#define cdecl __attribute__((__cdecl__))
 #endif
 
 #define	AtariST		1	/* => definite machine specificity	*/

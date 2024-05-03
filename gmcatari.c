@@ -367,6 +367,11 @@ void setgulam(void)
 {
 	long n;
 	long *pp;
+
+    /* Not if we're already in super mode. We might be in the middle
+    of a _shell_p command */
+    if (Super(1) == -1)
+        return;
 	
 	n = Super(0L);						/* _shell_p = 0x4f6L */
 	*((long *) (0x00004f6L)) = (long) &call_gulam_code[5];
