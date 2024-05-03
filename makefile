@@ -44,3 +44,10 @@ gasmmwc.o:	gasmmwc.s
 
 clean::
 	rm -f *.o *.ttp
+
+release: gulam.ttp
+	-rm -r release
+	mkdir release
+	cp -r doc examples release
+	cp allchang gulam.g gulam.hlp gulam.ttp slchange.txt release
+	tar -czvf release.tar.gz release
